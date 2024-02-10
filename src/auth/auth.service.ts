@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
-import { User, Todo } from "@prisma/client";
 import { DbService } from "src/db/db.service";
 import { AuthDto } from "src/dto";
 import * as argon from "argon2";
@@ -29,5 +28,20 @@ export class AuthService {
     }
   }
 
-  login() {}
+  async login(dto: AuthDto) {
+    const user = await this.db.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (!user) throw new ForbiddenException("User does not exist");
+
+    const isPswCorrect = await argon.verify(user.pswhash, dto.password);
+
+    if (!isPswCorrect) throw new ForbiddenException("Incorrect passwor");
+
+    delete user.pswhash;
+    return user;
+  }
 }
