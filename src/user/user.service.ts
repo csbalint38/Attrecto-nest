@@ -21,7 +21,7 @@ export class UserService {
     }
   }
 
-  async getUserById(@Param("id") id: string) {
-    const user = await
-  }
+  //async getUserById(@Param("id") id: string) {
+  //const user = await
+  //}
 }
