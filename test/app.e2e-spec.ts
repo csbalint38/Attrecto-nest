@@ -3,7 +3,8 @@ import * as pactum from "pactum";
 import { AppModule } from "../src/app.module";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { DbService } from "../src/db/db.service";
-import { AuthDto } from "src/dto";
+import { AuthDto } from "src/auth/dto";
+import { EditUserDto } from "src/user/dto";
 
 describe("App e2e", () => {
   let app: INestApplication;
@@ -77,7 +78,8 @@ describe("App e2e", () => {
           .spec()
           .post("/auth/login")
           .withBody(dto)
-          .expectStatus(200);
+          .expectStatus(200)
+          .stores("userAccessToken", "access_token");
       });
       it("Email empty exception", () => {
         return pactum
@@ -104,15 +106,38 @@ describe("App e2e", () => {
   });
 
   describe("User", () => {
-    describe("Get current user", () => {});
-    describe("Edit user", () => {});
+    describe("Get current user", () => {
+      it("Current user got", () => {
+        return pactum
+          .spec()
+          .get("/users/me")
+          .withHeaders({ Authorization: "Bearer $S{userAccessToken}" })
+          .expectStatus(200);
+      });
+    });
+    describe("Edit user", () => {
+      it("User edited", () => {
+        const dto: EditUserDto = {
+          firstName: "Balint",
+          email: "balint.csefalvay@gmail.com",
+        };
+        return pactum
+          .spec()
+          .patch("/users")
+          .withHeaders({ Authorization: "Bearer $S{userAccessToken}" })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.firstName)
+          .expectBodyContains(dto.email);
+      });
+    });
   });
 
   describe("Todos", () => {
     describe("Create todo", () => {});
     describe("Get todos", () => {});
     describe("Get todo by id", () => {});
-    describe("Edit todo", () => {});
-    describe("Delete todo", () => {});
+    describe("Edit todo by id", () => {});
+    describe("Delete todo by id", () => {});
   });
 });
