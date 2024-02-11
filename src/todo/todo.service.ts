@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { EditTodoDto, createTodoDto } from "./dto";
 import { DbService } from "src/db/db.service";
 
@@ -25,9 +25,48 @@ export class TodoService {
     return todo;
   }
 
-  getTodosById(userId: string, todoId: string) {}
+  async getTodoById(userId: string, todoId: string) {
+    return this.db.todo.findFirst({
+      where: {
+        id: todoId,
+        userId,
+      },
+    });
+  }
 
-  editTodoById(userId: string, todoId: string, dto: EditTodoDto) {}
+  async editTodoById(userId: string, todoId: string, dto: EditTodoDto) {
+    const todo = await this.db.todo.findUnique({
+      where: {
+        id: todoId,
+      },
+    });
+    if (!todo || todo.userId !== userId) {
+      throw new ForbiddenException("Access to this todo is denied");
+    }
 
-  deleteTodoById(userId: string, todoId: string) {}
+    return this.db.todo.update({
+      where: {
+        id: todoId,
+      },
+      data: {
+        ...dto,
+      },
+    });
+  }
+
+  async deleteTodoById(userId: string, todoId: string) {
+    const todo = await this.db.todo.findUnique({
+      where: {
+        id: todoId,
+      },
+    });
+    if (!todo || todo.userId !== userId) {
+      throw new ForbiddenException("Access to this todo is denied");
+    }
+    await this.db.todo.delete({
+      where: {
+        id: todoId,
+      },
+    });
+  }
 }

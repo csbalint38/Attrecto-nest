@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -30,7 +32,7 @@ export class TodoController {
 
   @Get(":id")
   getTodosById(@GetUser("id") userId: string, @Param("id") todoId: string) {
-    return this.todoService.getTodosById(userId, todoId);
+    return this.todoService.getTodoById(userId, todoId);
   }
 
   @Patch(":id")
@@ -42,6 +44,7 @@ export class TodoController {
     this.todoService.editTodoById(userId, todoId, dto);
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(":id")
   deleteTodoById(@GetUser("id") userId: string, @Param("id") todoId: string) {
     return this.deleteTodoById(userId, todoId);
